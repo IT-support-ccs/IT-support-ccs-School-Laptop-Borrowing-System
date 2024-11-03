@@ -63,22 +63,35 @@ async function getDeviceNameFromFirebase(barcode, collectionName) {
 }
 
 async function borrowLaptop(studentName, laptopBarcode, chargerBarcode) {
-    // البحث عن الجهاز في البيانات المحلية
-    let laptop = laptopsData.find(item => item.barcode === laptopBarcode);
-    let charger = chargersData.find(item => item.barcode === chargerBarcode);
+    // تحقق إذا كان باركود اللابتوب هو باركود شاحن والعكس
+    if (laptopBarcode === chargerBarcode) {
+        showNotification('Cannot borrow a laptop with the same barcode as charger!', 'error');
+        return;
+    }
 
-    // إذا لم يتم العثور على الجهاز في البيانات المحلية، اجلب الاسم من Firebase
+    // البحث عن الأجهزة
+    const laptop = laptopsData.find(item => item.barcode === laptopBarcode);
+    const charger = chargersData.find(item => item.barcode === chargerBarcode);
+
+    // تحقق من وجود كل من اللابتوب والشاحن
     if (!laptop) {
-        const laptopName = await getDeviceNameFromFirebase(laptopBarcode, "laptops");
-        laptop = { barcode: laptopBarcode, name: laptopName };
+        showNotification('Laptop not found!', 'error');
+        return;
     }
     if (!charger) {
-        const chargerName = await getDeviceNameFromFirebase(chargerBarcode, "chargers");
-        charger = { barcode: chargerBarcode, name: chargerName };
+        showNotification('Charger not found!', 'error');
+        return;
     }
 
-    if (borrowedData.find(item => item.laptopBarcode === laptopBarcode && !item.returnedAt)) {
+    // تحقق مما إذا كانت اللابتوب قد تم استعارتها بالفعل
+    if (borrowedData.some(item => item.laptopBarcode === laptopBarcode && !item.returnedAt)) {
         showNotification('This laptop is already borrowed!', 'error');
+        return;
+    }
+
+    // تحقق مما إذا كانت الشاحن قد تم استعارتها بالفعل
+    if (borrowedData.some(item => item.chargerBarcode === chargerBarcode && !item.returnedAt)) {
+        showNotification('This charger is already borrowed!', 'error');
         return;
     }
 
@@ -114,6 +127,7 @@ async function borrowLaptop(studentName, laptopBarcode, chargerBarcode) {
         showNotification('Error borrowing laptop!', 'error');
     }
 }
+
 
 // تحميل الأجهزة المستعارة
 function loadBorrowedItems() {
