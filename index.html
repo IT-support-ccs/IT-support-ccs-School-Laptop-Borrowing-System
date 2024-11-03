@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./CCS LOGO.png" type="image/png">
+    <title>School Laptop Borrowing System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <img src="./CCS LOGO.png" alt="Cairo Covenant School Logo" style="width: 100px; display: block; margin: 0 auto;">
+        <h1>Cairo Covenant School</h1>
+        <h3>School Laptop Borrowing System</h3>
+        <div id="inventory" class="inventory">
+            <div><i class="fas fa-laptop"></i> Total Laptops Available: <span id="totalLaptops">0</span></div>
+            <div><i class="fas fa-laptop-code"></i> Total Laptops Borrowed: <span id="totalBorrowed">0</span></div>
+        </div>
+        <div id="notification" class="notification"></div>
+        <form id="borrowForm" class="form">
+            <h2>Borrow a Laptop</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="studentName"><i class="fas fa-user"></i> Student Name</label>
+                    <input type="text" id="studentName" required placeholder="Enter student's name">
+                </div>
+                <div class="form-group">
+                    <label for="laptopBarcode"><i class="fas fa-laptop"></i> Laptop Barcode</label>
+                    <input type="text" id="laptopBarcode" required placeholder="Scan or enter barcode">
+                </div>
+                <div class="form-group">
+                    <label for="chargerBarcode"><i class="fas fa-bolt"></i> Charger Barcode</label>
+                    <input type="text" id="chargerBarcode" required placeholder="Scan or enter charger barcode">
+                </div>
+            </div>
+            <button type="submit" class="button-primary"><i class="fas fa-plus"></i> Borrow Laptop</button>
+        </form>
+        
+        <div id="returnNotification" class="notification"></div>
+        
+        <h2>Borrowed Laptops</h2>
+        <table id="borrowedTable">
+            <thead>
+                <tr>
+                    <th>Laptop</th>
+                    <th>Charger</th>
+                    <th>Student</th>
+                    <th>Borrowed At</th>
+                    <th>Return</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+        <button id="reportPageButton" class="button-secondary"><i class="fas fa-file-alt"></i> View Reports</button>
+        <div id="returnModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="closeModal">&times;</span>
+                <h2><i class="fas fa-undo"></i> Return Laptop</h2>
+                <label for="returnLaptopBarcode">Laptop Barcode</label>
+                <input type="text" id="returnLaptopBarcode">
+                <label for="returnChargerBarcode">Charger Barcode</label>
+                <input type="text" id="returnChargerBarcode">
+                <button onclick="processReturn()" class="button-primary"><i class="fas fa-check"></i> Submit Return</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

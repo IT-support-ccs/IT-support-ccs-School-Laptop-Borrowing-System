@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrowed Laptops Reports</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> <!-- إضافة مكتبة jsPDF -->
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-laptop"></i> Borrowed Laptops Reports</h1>
+        
+        <!-- زر الفلترة -->
+        <button id="filterButton"><i class="fas fa-filter"></i> Filter</button>
+        <div id="filterOptions" style="display: none;">
+            <label for="filterLaptop">Filter by Laptop Name:</label>
+            <input type="text" id="filterLaptop" placeholder="Enter laptop name">
+            <label for="filterCharger">Filter by Charger Name:</label>
+            <input type="text" id="filterCharger" placeholder="Enter charger name">
+            <label for="filterStudent">Filter by Student Name:</label>
+            <input type="text" id="filterStudent" placeholder="Enter student name">
+        </div>
+
+        <!-- حقل تاريخ الفلترة -->
+        <label for="filterDate">Filter by Date:</label>
+        <input type="date" id="filterDate">
+
+        <!-- أزرار تحميل وتصدير التقارير -->
+        <button id="loadReportsButton"><i class="fas fa-sync-alt"></i> Load Reports</button>
+        <button id="exportReportsButton"><i class="fas fa-file-export"></i> Export Reports</button>
+        
+        <!-- زر لمسح كل التقارير -->
+        <button id="clearReportsButton" style="background-color: red; color: white;"><i class="fas fa-trash"></i> Clear All Reports</button>
+
+        <h2>Borrowed Laptops Reports</h2>
+        <table id="reportsTable">
+            <thead>
+                <tr>
+                    <th>Laptop</th>
+                    <th>Charger</th>
+                    <th>Student</th>
+                    <th>Borrowed At</th>
+                    <th>Returned At</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button id="backToMainButton"><i class="fas fa-arrow-left"></i> Back to Main</button>
+    </div>
+    <script type="module" src="reports.js"></script>
+</body>
+</html>
