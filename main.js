@@ -9,6 +9,11 @@ let laptopsData = [];
 let chargersData = [];
 let borrowedData = [];
 
+// إظهار الرسائل
+// إضافة مسارات الصوت
+const successSound = new Audio('success.mp3');
+const errorSound = new Audio('error.mp3');
+
 // إظهار الرسائل مع تشغيل الصوت
 function showNotification(message, type) {
     notification.textContent = message;
