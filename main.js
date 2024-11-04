@@ -9,13 +9,22 @@ let laptopsData = [];
 let chargersData = [];
 let borrowedData = [];
 
-// إظهار الرسائل
+// إظهار الرسائل مع تشغيل الصوت
 function showNotification(message, type) {
     notification.textContent = message;
     notification.className = `notification ${type}`;
     notification.style.display = 'block';
+
+    // تشغيل الصوت بناءً على نوع الرسالة
+    if (type === 'success') {
+        successSound.play();
+    } else if (type === 'error') {
+        errorSound.play();
+    }
+
     setTimeout(() => { notification.style.display = 'none'; }, 5000);
 }
+
 
 // تحديث العرض
 async function updateInventoryDisplay() {
