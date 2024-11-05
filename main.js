@@ -1,5 +1,6 @@
 import { db } from './firebase.js';
-import { collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 const notification = document.getElementById('notification');
 const borrowedTableBody = document.querySelector('#borrowedTable tbody');
@@ -10,17 +11,14 @@ let chargersData = [];
 let borrowedData = [];
 
 // إظهار الرسائل
-// إضافة مسارات الصوت
 const successSound = new Audio('success.mp3');
 const errorSound = new Audio('error.mp3');
 
-// إظهار الرسائل مع تشغيل الصوت
 function showNotification(message, type) {
     notification.textContent = message;
     notification.className = `notification ${type}`;
     notification.style.display = 'block';
 
-    // تشغيل الصوت بناءً على نوع الرسالة
     if (type === 'success') {
         successSound.play();
     } else if (type === 'error') {
@@ -29,7 +27,6 @@ function showNotification(message, type) {
 
     setTimeout(() => { notification.style.display = 'none'; }, 5000);
 }
-
 
 // تحديث العرض
 async function updateInventoryDisplay() {
@@ -48,10 +45,13 @@ async function loadData() {
         const chargersSnapshot = await getDocs(collection(db, "chargers"));
         chargersData = chargersSnapshot.docs.map(doc => ({ barcode: doc.id, name: doc.data().name }));
 
-        const borrowedSnapshot = await getDocs(collection(db, "borrowed"));
-        borrowedData = borrowedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // استخدام المستمع لمراقبة التغييرات في مجموعة borrowed
+        onSnapshot(collection(db, "borrowed"), (snapshot) => {
+            borrowedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            loadBorrowedItems();
+            updateInventoryDisplay();
+        });
 
-        loadBorrowedItems();
         await updateInventoryDisplay();
     } catch (error) {
         console.error("Error loading data:", error);
@@ -60,15 +60,14 @@ async function loadData() {
 }
 
 // تسجيل الاستعارة
-
 async function getDeviceNameFromFirebase(barcode, collectionName) {
     try {
         const deviceDoc = await getDoc(doc(db, collectionName, barcode));
         if (deviceDoc.exists()) {
-            return deviceDoc.data().name; // استرجاع اسم الجهاز
+            return deviceDoc.data().name;
         } else {
             console.error(`Device with barcode ${barcode} not found in ${collectionName}!`);
-            return barcode; // إذا لم يتم العثور على الجهاز، ارجع الباركود كبديل
+            return barcode;
         }
     } catch (error) {
         console.error("Error fetching device name from Firebase:", error);
@@ -77,17 +76,14 @@ async function getDeviceNameFromFirebase(barcode, collectionName) {
 }
 
 async function borrowLaptop(studentName, laptopBarcode, chargerBarcode) {
-    // تحقق إذا كان باركود اللابتوب هو باركود شاحن والعكس
     if (laptopBarcode === chargerBarcode) {
         showNotification('Cannot borrow a laptop with the same barcode as charger!', 'error');
         return;
     }
 
-    // البحث عن الأجهزة
     const laptop = laptopsData.find(item => item.barcode === laptopBarcode);
     const charger = chargersData.find(item => item.barcode === chargerBarcode);
 
-    // تحقق من وجود كل من اللابتوب والشاحن
     if (!laptop) {
         showNotification('Laptop not found!', 'error');
         return;
@@ -97,13 +93,11 @@ async function borrowLaptop(studentName, laptopBarcode, chargerBarcode) {
         return;
     }
 
-    // تحقق مما إذا كانت اللابتوب قد تم استعارتها بالفعل
     if (borrowedData.some(item => item.laptopBarcode === laptopBarcode && !item.returnedAt)) {
         showNotification('This laptop is already borrowed!', 'error');
         return;
     }
 
-    // تحقق مما إذا كانت الشاحن قد تم استعارتها بالفعل
     if (borrowedData.some(item => item.chargerBarcode === chargerBarcode && !item.returnedAt)) {
         showNotification('This charger is already borrowed!', 'error');
         return;
@@ -142,7 +136,6 @@ async function borrowLaptop(studentName, laptopBarcode, chargerBarcode) {
     }
 }
 
-
 // تحميل الأجهزة المستعارة
 function loadBorrowedItems() {
     borrowedTableBody.innerHTML = '';
@@ -163,7 +156,6 @@ function loadBorrowedItems() {
 // فتح نافذة الإرجاع
 function openReturnModal(expectedLaptopBarcode, expectedChargerBarcode) {
     document.getElementById('returnModal').style.display = 'block';
-    // تأكد من أن الحقول فارغة قبل فتح النافذة
     document.getElementById('returnLaptopBarcode').value = '';
     document.getElementById('returnChargerBarcode').value = '';
 }
@@ -172,6 +164,7 @@ function openReturnModal(expectedLaptopBarcode, expectedChargerBarcode) {
 function closeModal() {
     document.getElementById('returnModal').style.display = 'none';
 }
+
 // معالجة الإرجاع
 async function processReturn() {
     const returnLaptopBarcode = document.getElementById('returnLaptopBarcode').value;
@@ -189,30 +182,20 @@ async function processReturn() {
 // إعادة الجهاز
 async function returnItem(borrowedItem) {
     try {
-        // حذف السجل من قاعدة البيانات
         await deleteDoc(doc(db, "borrowed", borrowedItem.id));
-        
-        // إضافة موعد الإرجاع
         borrowedItem.returnedAt = new Date().toISOString();
-        
-        // إضافة السجل إلى التقارير
+
         await saveReport("Return", {
             studentName: borrowedItem.studentName,
-            laptopName: borrowedItem.laptopName, // استخدام اسم اللابتوب
-            chargerName: borrowedItem.chargerName, // استخدام اسم الشاحن
+            laptopName: borrowedItem.laptopName,
+            chargerName: borrowedItem.chargerName,
             returnedAt: borrowedItem.returnedAt
         });
-        
-        
-        // إظهار رسالة النجاح
+
         showNotification('Laptop returned successfully!', 'success');
-        
-        // إزالة الجهاز من borrowedData
         borrowedData = borrowedData.filter(item => item.id !== borrowedItem.id);
-        
-        // تحديث العرض
         await updateInventoryDisplay();
-        loadBorrowedItems(); // إعادة تحميل العناصر المستعارة
+        loadBorrowedItems();
     } catch (error) {
         console.error("Error returning item:", error);
         showNotification('Error returning item!', 'error');
@@ -251,7 +234,7 @@ document.getElementById('reportPageButton').onclick = () => {
 
 // إضافة معالج حدث لزر "Submit Return" في نافذة الإرجاع
 document.querySelector('.modal .button-primary').onclick = async () => {
-    await processReturn(); // تأكد من استخدام await هنا
+    await processReturn();
 };
 
 // إضافة حدث النقر على علامة "X" لإغلاق النافذة المنبثقة
