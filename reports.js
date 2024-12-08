@@ -60,8 +60,8 @@ async function loadReports(filterDate, filterStudent, filterLaptop, filterCharge
             row.insertCell(0).textContent = data.details.laptopName; // عرض اسم اللابتوب
             row.insertCell(1).textContent = data.details.chargerName; // عرض اسم الشاحن
             row.insertCell(2).textContent = data.details.studentName; // عرض اسم الطالب
-            row.insertCell(3).textContent = new Date(data.timestamp).toLocaleString(); // تاريخ الإعارة
-            row.insertCell(4).textContent = data.action === "Return" ? new Date(data.details.returnedAt).toLocaleString() : 'Not Returned'; // تاريخ الإرجاع
+            row.insertCell(3).textContent = data.details.borrowedAt; // تاريخ الإعارة
+            row.insertCell(4).textContent = data.details.returnedAt; // تاريخ الاغلاق
         }
     });
 }
